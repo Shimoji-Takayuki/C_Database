@@ -1,7 +1,13 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <stdlib.h>
 #include "common.h"
 
+/*
+split
+Description:文字列を指定された区切り文字で配列に分ける
+*/
 size_t split(char *target, const char *separator, char **result)
 {
     size_t target_len = strlen(target);
@@ -30,6 +36,10 @@ size_t split(char *target, const char *separator, char **result)
     return i;
 }
 
+/*
+contain
+Description:整数型配列の中から指定した値を検索し、そのインデックスを返す
+*/
 int contain(int *intAry, int count, int target)
 {
     int index = -1;
@@ -44,4 +54,48 @@ int contain(int *intAry, int count, int target)
     }
 
     return index;
+}
+
+/*
+getSystemDate
+Description:システム日時を取得し、YYYYMMDDHHMISSの形で返す
+*/
+void getSystemDate(char *systemDate)
+{
+
+    time_t timer;
+    struct tm *local;
+    struct tm *utc;
+
+    /* 現在時刻を取得 */
+    timer = time(NULL);
+
+    local = localtime(&timer); /* 地方時に変換 */
+
+    // 年(YYYY)
+    char strYear[5];
+    itoa(local->tm_year + 1900, strYear, 10);
+
+    // 月(MM)
+    char strMonth[3];
+    itoa(local->tm_mon + 1, strMonth, 10);
+
+    // 日(DD)
+    char strDay[3];
+    itoa(local->tm_mday, strDay, 10);
+
+    // 時(HH)
+    char strHour[3];
+    itoa(local->tm_hour, strHour, 10);
+
+    // 分(MI)
+    char strMinute[3];
+    itoa(local->tm_min, strMinute, 10);
+
+    // 秒(SS)
+    char strSecond[3];
+    itoa(local->tm_sec, strSecond, 10);
+
+    // 文字列を連結してシステム日時のフォーマット変換
+    sprintf(systemDate, "%04s%02s%02s%02s%02s%02s", strYear, strMonth, strDay, strHour, strMinute, strSecond);
 }

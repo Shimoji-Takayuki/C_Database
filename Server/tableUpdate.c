@@ -20,7 +20,7 @@ char *tableUpdate(char *tblName, char **updateList, char **conditionList, int up
     static char result[SENDABLE_LENGTH];
     char fileContent[READABLE_LENGTH];
     FILE *inp, *oup, *column;
-    char filePathIn[256], filePathColumn[256], filePathOut[256];
+    char filePathIn[256], filePathColumn[256], filePathOut[256], filePathBackup[256];
     int columnIndex = 0;
     int argCount = 0;
     int conditionCount = 0;
@@ -33,10 +33,15 @@ char *tableUpdate(char *tblName, char **updateList, char **conditionList, int up
     char *targetColumn[MAX_COLUMN_NUM] = {0};
     char *conditionColumn[MAX_COLUMN_NUM] = {0};
 
+    // 更新日時としてシステム日時を取得
+    char systemDate[17];
+    getSystemDate(systemDate);
+
     // CSVファイルのディレクトリ
     sprintf(filePathIn, "data/%s/%s.csv", tblName, tblName);
     sprintf(filePathColumn, "data/%s/%s_COLUMN.csv", tblName, tblName);
     sprintf(filePathOut, "data/%s/temp.csv", tblName);
+    sprintf(filePathBackup, "data/%s/bk/%s_%s.csv", tblName, tblName, systemDate);
 
     // 読み込み／書き込み用ファイル
     inp = fopen(filePathIn, "r");
@@ -125,19 +130,8 @@ char *tableUpdate(char *tblName, char **updateList, char **conditionList, int up
     fclose(inp);
     fclose(oup);
 
-    // 更新前ファイルを削除して更新後ファイルを変更
-    // 更新後のファイル名生成のため、システム日時を取得
-    
-
-    // if (remove(filePathIn) == 0)
-    // {
-    //     // printf("ファイルを削除");
-    // }
-    // else
-    // {
-    //     // printf("削除失敗");
-    // }
-
+    // 更新前ファイルをリネーム(システム日時を付加)してbkフォルダへ移動
+    rename(filePathIn, filePathBackup);
     rename(filePathOut, filePathIn);
 
     // 処理結果を戻り値変数resultへ格納
