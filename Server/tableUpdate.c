@@ -9,11 +9,11 @@
 #define LINE_LENGTH 10000
 #define READABLE_LENGTH 100000
 
+// commonn_func.cで定義済み
 int checkCondition(char *readLine, char **conditionList, int *conditionColumnindexList, int conditionCount, char **line);
 
 /*
 指定したファイル名の指定されたレコードを変更
-複数行の更新、複数列の更新は実装予定
 */
 char *tableUpdate(char *tblName, char **updateList, char **conditionList, int updateListCount, int conditionListCount, int *count)
 {
@@ -140,26 +140,6 @@ char *tableUpdate(char *tblName, char **updateList, char **conditionList, int up
     // 処理結果の総バイト数をポインタで渡す
     *count = strlen(result);
     printf("%d\n", *count);
-
-    return result;
-}
-
-int checkCondition(char *readLine, char **conditionList, int *conditionColumnindexList, int conditionCount, char **line)
-{
-    int result = 0;
-    size_t columnSize;
-
-    columnSize = split(readLine, ",", line);
-
-    for (int i = 0; i < conditionCount; i++)
-    {
-        if (strcmp(line[conditionColumnindexList[i]], conditionList[2 * i + 1]) != 0)
-        {
-            // 更新条件に一致しない値なのでスキップ
-            result = 1;
-            break;
-        }
-    }
 
     return result;
 }

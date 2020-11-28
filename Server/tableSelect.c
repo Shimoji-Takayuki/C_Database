@@ -4,6 +4,9 @@
 
 #define SENDABLE_LENGTH 100000
 
+// commonn_func.cで定義済み
+int checkCondition(char *readLine, char **conditionList, int *conditionColumnindexList, int conditionCount, char **line);
+
 /*
 指定したファイル名の内容を取得して返す
 検索条件は実装予定

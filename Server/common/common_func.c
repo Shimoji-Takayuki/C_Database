@@ -99,3 +99,29 @@ void getSystemDate(char *systemDate)
     // 文字列を連結してシステム日時のフォーマット変換
     sprintf(systemDate, "%04s%02s%02s%02s%02s%02s", strYear, strMonth, strDay, strHour, strMinute, strSecond);
 }
+
+/*
+checkCondition
+Description:行が更新対象かどうか確認
+result:0→更新対象
+result:1→更新対象外
+*/
+int checkCondition(char *readLine, char **conditionList, int *conditionColumnindexList, int conditionCount, char **line)
+{
+    int result = 0;
+    size_t columnSize;
+
+    columnSize = split(readLine, ",", line);
+
+    for (int i = 0; i < conditionCount; i++)
+    {
+        if (strcmp(line[conditionColumnindexList[i]], conditionList[2 * i + 1]) != 0)
+        {
+            // 更新条件に一致しない値なのでスキップ
+            result = 1;
+            break;
+        }
+    }
+
+    return result;
+}

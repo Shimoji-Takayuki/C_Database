@@ -61,19 +61,19 @@ int main()
             result = tableInsert(tableName, argList, &count);
             break;
         case 'U': // UPDATE:更新
-                  // argList:更新するテーブルの行ID,更新する列、更新する値
+                  // updateList:更新される列と値のペア
+                  // conditionList:更新条件の列と値のペア
+                  // updateListCount:更新対象列の数
+                  // conditionListCount:更新条件の数
             splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount);
-
-            // for (int i = 0; i < sizeof(updateList) / 4; i++)
-            // {
-            //     printf("%s\n", updateList[i]);
-            // }
-
             result = tableUpdate(tableName, updateList, conditionList, updateListCount, conditionListCount, &count);
 
             break;
         case 'D': // DELETE:削除
-            printf("%s", "DELETEします\n");
+                  // conditionList:更新条件の列と値のペア
+                  // conditionListCount:更新条件の数
+            splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount);
+            result = tableDelete(tableName, conditionList, conditionListCount, &count);
 
             break;
         default:
@@ -83,7 +83,6 @@ int main()
         }
 
         printf("%s", result);
-        // printf("件数:%d\n", count);
 
         // クライアント側へ送信
         send(sock2, result, count + 1, 0);
@@ -103,6 +102,10 @@ int main()
     return 0;
 }
 
+/*
+getArgument
+Description:Client側から渡されたテーブル名と処理区分を取得
+*/
 void getArgument(char *argStr, char **tableName, char **procCategory, char **argList)
 {
     char *result[MAX_ARGUMENT];
@@ -118,6 +121,10 @@ void getArgument(char *argStr, char **tableName, char **procCategory, char **arg
     }
 }
 
+/*
+splitArgument
+Description:更新・削除関数の引数作成メソッド
+*/
 void splitArgument(char **argList, char **updateList, char **conditionList, int *updateListCount, int *conditionListCount)
 {
     int i, j = 0;
