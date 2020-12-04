@@ -2,6 +2,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "common.h"
 
 /*
@@ -37,16 +38,37 @@ size_t split(char *target, const char *separator, char **result)
 }
 
 /*
-contain
+containInt
 Description:整数型配列の中から指定した値を検索し、そのインデックスを返す
 */
-int contain(int *intAry, int count, int target)
+int containInt(int *intAry, int count, int target)
 {
     int index = -1;
 
     for (int i = 0; i < count; i++)
     {
         if (intAry[i] == target)
+        {
+            index = i;
+            break;
+        }
+    }
+
+    return index;
+}
+
+/*
+containStr
+Description:文字列配列の中から指定した値を検索し、そのインデックスを返す
+*/
+int containStr(char **strAry, int count, char *target)
+{
+    int index = -1;
+
+    for (int i = 0; i < count; i++)
+    {
+
+        if (strcmpIgnoreCase(strAry[i], target) == 0)
         {
             index = i;
             break;
@@ -115,7 +137,7 @@ int checkCondition(char *readLine, char **conditionList, int *conditionColumnind
 
     for (int i = 0; i < conditionCount; i++)
     {
-        if (strcmp(line[conditionColumnindexList[i]], conditionList[2 * i + 1]) != 0)
+        if (strcmpIgnoreCase(line[conditionColumnindexList[i]], conditionList[2 * i + 1]) != 0)
         {
             // 更新条件に一致しない値なのでスキップ
             result = 1;
@@ -124,4 +146,27 @@ int checkCondition(char *readLine, char **conditionList, int *conditionColumnind
     }
 
     return result;
+}
+
+/*
+strcmp_ignorecase
+Description:文字列を比較（大文字小文字無視）
+result:0→文字列が一致
+result:1→、不一致
+*/
+int strcmpIgnoreCase(const char *s1, const char *s2)
+{
+    // １文字ずつ、小文字に統一して比較する。
+    while (tolower(*s1) == tolower(*s2))
+    {
+        if (*s1 == '\0')
+        {
+            return 0;
+        }
+
+        ++s1;
+        ++s2;
+    }
+
+    return tolower(*s1) - tolower(*s2);
 }

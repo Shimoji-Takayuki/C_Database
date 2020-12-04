@@ -11,8 +11,8 @@
 
 // 引数の分割関数
 size_t split(char *s, const char *separator, char **result);
-void getArgument(char *arg, char **tableName, char **procCategory, char **argList);
-void splitArgument(char **arg, char **updateList, char **conditionList, int *updateListCount, int *conditionListCount);
+void getArgument(char *arg, char **tableName, char **procCategory, char **argList, int *argListCount);
+void splitArgument(char **arg, char **updateList, char **conditionList, int *updateListCount, int *conditionListCount, int argListCount);
 
 int main()
 {
@@ -22,12 +22,6 @@ int main()
     char recvArg[256];
     char *tableName = (char *)malloc(TABLE_NAME_LENGTH + 1);
     char *procCategory;
-    char *argList[MAX_ARGUMENT] = {0};
-    char *updateList[MAX_COLUMN_NUM * 2] = {0};
-    char *conditionList[MAX_COLUMN_NUM * 2] = {0};
-
-    int updateListCount = 0;
-    int conditionListCount = 0;
 
     WSAStartup(MAKEWORD(2, 0), &w);
 
@@ -44,17 +38,28 @@ int main()
 
     while (1)
     {
+        char *argList[MAX_ARGUMENT] = {0};
+        char *updateList[MAX_COLUMN_NUM * 2] = {0};
+        char *conditionList[MAX_COLUMN_NUM * 2] = {0};
+        int updateListCount = 0;
+        int conditionListCount = 0;
+        int argListCount;
+
         len = sizeof(client);
         int sock2 = accept(sock, (struct sockaddr *)&client, &len);
 
         recv(sock2, recvArg, sizeof(recvArg), 0);
 
-        getArgument(recvArg, &tableName, &procCategory, argList);
+        getArgument(recvArg, &tableName, &procCategory, argList, &argListCount);
 
         switch (*procCategory)
         {
         case 'S': // SELECT:検索
-            result = tableSelect(tableName, &count);
+                  // conditionList:取得条件の列と値のペア
+                  // conditionListCount:取得条件の数
+            splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount, argListCount);
+
+            result = tableSelect(tableName, conditionList, conditionListCount, &count);
             break;
         case 'I': // INSERT:挿入
             // argList:テーブルに挿入する各列の値
@@ -65,14 +70,14 @@ int main()
                   // conditionList:更新条件の列と値のペア
                   // updateListCount:更新対象列の数
                   // conditionListCount:更新条件の数
-            splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount);
+            splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount, argListCount);
             result = tableUpdate(tableName, updateList, conditionList, updateListCount, conditionListCount, &count);
 
             break;
         case 'D': // DELETE:削除
                   // conditionList:更新条件の列と値のペア
                   // conditionListCount:更新条件の数
-            splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount);
+            splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount, argListCount);
             result = tableDelete(tableName, conditionList, conditionListCount, &count);
 
             break;
@@ -106,7 +111,7 @@ int main()
 getArgument
 Description:Client側から渡されたテーブル名と処理区分を取得
 */
-void getArgument(char *argStr, char **tableName, char **procCategory, char **argList)
+void getArgument(char *argStr, char **tableName, char **procCategory, char **argList, int *argListCount)
 {
     char *result[MAX_ARGUMENT];
     size_t result_size;
@@ -119,19 +124,21 @@ void getArgument(char *argStr, char **tableName, char **procCategory, char **arg
     {
         argList[i - 2] = result[i];
     }
+
+    *argListCount = (int)result_size - 2;
 }
 
 /*
 splitArgument
 Description:更新・削除関数の引数作成メソッド
 */
-void splitArgument(char **argList, char **updateList, char **conditionList, int *updateListCount, int *conditionListCount)
+void splitArgument(char **argList, char **updateList, char **conditionList, int *updateListCount, int *conditionListCount, int argListCount)
 {
     int i, j = 0;
 
-    for (i = 0; i < MAX_COLUMN_NUM; i++)
+    for (i = 0; i < argListCount; i++)
     {
-        if (strcmp(argList[i], "WHERE") == 0 || !argList[i])
+        if (strcmpIgnoreCase(argList[i], "WHERE") == 0 || !argList[i])
         {
             i++;
             break;
@@ -142,7 +149,14 @@ void splitArgument(char **argList, char **updateList, char **conditionList, int 
     // 更新用の引数の数
     *updateListCount = i - 1;
 
-    for (; i < MAX_COLUMN_NUM; i++)
+    // WHERE句の存在確認
+    if (containStr(argList, argListCount, "WHERE") == -1)
+    {
+        // WHERE句がない場合は処理終了
+        return;
+    }
+
+    for (; i < argListCount; i++)
     {
         if (!argList[i])
         {

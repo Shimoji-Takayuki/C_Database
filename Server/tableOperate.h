@@ -1,5 +1,5 @@
 // テーブルの内容を読み込んで出力
-char *tableSelect(char *tblName, int *count);
+char *tableSelect(char *tblName, char **conditionList, int conditionListCount, int *count);
 // テーブルへのデータ挿入
 char *tableInsert(char *tblName, char **data, int *count);
 // テーブルのデータ更新

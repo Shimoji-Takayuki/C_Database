@@ -56,7 +56,7 @@ char *tableUpdate(char *tblName, char **updateList, char **conditionList, int up
 
         for (int i = 0; i < updateListCount; i += 2)
         {
-            if (strcmp(updateList[i], readLine) == 0)
+            if (strcmpIgnoreCase(updateList[i], readLine) == 0)
             {
                 targetColumnIndexList[i / 2] = columnIndex;
 
@@ -67,7 +67,7 @@ char *tableUpdate(char *tblName, char **updateList, char **conditionList, int up
 
         for (int i = 0; i < conditionListCount; i += 2)
         {
-            if (strcmp(conditionList[i], readLine) == 0)
+            if (strcmpIgnoreCase(conditionList[i], readLine) == 0)
             {
                 conditionColumnIndexList[i / 2] = columnIndex;
 
@@ -87,19 +87,22 @@ char *tableUpdate(char *tblName, char **updateList, char **conditionList, int up
         char readLineCopy[LINE_LENGTH] = {0};
         strcpy(readLineCopy, readLine);
 
-        // 改行を削除
+        // 改行コード除外
         readLineCopy[strlen(readLineCopy) - 1] = '\0';
 
-        // 更新対象の行か判定
-        if (checkCondition(readLineCopy, conditionList, conditionColumnIndexList, conditionCount, line) == 0)
+        // 更新対象の行か判定、更新条件がない場合は判定なしで更新
+        if (checkCondition(readLineCopy, conditionList, conditionColumnIndexList, conditionCount, line) == 0 || conditionListCount == 0)
         {
+
             // 更新対象の列を置換
             char *updatedLine = (char *)malloc(LINE_LENGTH + 1);
             updatedLine[0] = '\0';
 
             for (int i = 0; i < columnIndex; i++)
             {
-                int targetIndex = contain(targetColumnIndexList, argCount, i);
+
+                int targetIndex = containInt(targetColumnIndexList, argCount, i);
+
                 if (targetIndex != -1)
                 {
                     // 更新対象のデータを連結

@@ -56,7 +56,7 @@ char *tableDelete(char *tblName, char **conditionList, int conditionListCount, i
 
         for (int i = 0; i < conditionListCount; i += 2)
         {
-            if (strcmp(conditionList[i], readLine) == 0)
+            if (strcmpIgnoreCase(conditionList[i], readLine) == 0)
             {
                 conditionColumnIndexList[i / 2] = columnIndex;
 
@@ -72,8 +72,6 @@ char *tableDelete(char *tblName, char **conditionList, int conditionListCount, i
     // ファイルの内容を全て読み込む
     while (fgets(readLine, LINE_LENGTH, inp) != NULL)
     {
-        // ヘッダ書き込み
-
         // 元データ保持のため新しい文字列生成
         char readLineCopy[LINE_LENGTH] = {0};
         strcpy(readLineCopy, readLine);
@@ -85,33 +83,6 @@ char *tableDelete(char *tblName, char **conditionList, int conditionListCount, i
         if (checkCondition(readLineCopy, conditionList, conditionColumnIndexList, conditionCount, line) == 0)
         {
             // 削除対象の行であれば何も書き込まずスキップ
-
-            // 更新対象の列を置換
-            // char *updatedLine = (char *)malloc(LINE_LENGTH + 1);
-            // updatedLine[0] = '\0';
-
-            // for (int i = 0; i < columnIndex; i++)
-            // {
-            //     int targetIndex = contain(targetColumnIndexList, argCount, i);
-            //     if (targetIndex != -1)
-            //     {
-            //         // 更新対象のデータを連結
-            //         strcat(updatedLine, updateList[targetIndex * 2 + 1]);
-            //     }
-            //     else
-            //     {
-            //         // それ以外は元のデータをそのまま連結
-            //         strcat(updatedLine, line[i]);
-            //     }
-
-            //     strcat(updatedLine, ",");
-            // }
-
-            // // 末端文字、不要なカンマ（,）を改行コードに置換
-            // updatedLine[strlen(updatedLine) - 1] = '\n';
-
-            // fprintf(oup, updatedLine);
-            // free(updatedLine);
         }
         else
         {
