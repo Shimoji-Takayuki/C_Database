@@ -12,9 +12,8 @@ int checkCondition(char *readLine, char **conditionList, int *conditionColumnind
 
 /*
 指定したファイル名の内容を取得して返す
-検索条件は実装予定
 */
-char *tableSelect(char *tblName, char **conditionList, int conditionListCount, int *count)
+char *tableSelect(char *tableName, char **conditionList, int conditionListCount, int *count)
 {
     static char result[SENDABLE_LENGTH];
     char readLine[LINE_LENGTH] = {0};
@@ -34,8 +33,8 @@ char *tableSelect(char *tblName, char **conditionList, int conditionListCount, i
     result[0] = '\0';
 
     // CSVファイルのディレクトリ
-    sprintf(filePath, "data/%s/%s.csv", tblName, tblName);
-    sprintf(filePathColumn, "data/%s/%s_COLUMN.csv", tblName, tblName);
+    sprintf(filePath, "data/%s/%s.csv", tableName, tableName);
+    sprintf(filePathColumn, "data/%s/%s_COLUMN.csv", tableName, tableName);
 
     fp = fopen(filePath, "r");
     column = fopen(filePathColumn, "r");

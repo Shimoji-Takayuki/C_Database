@@ -20,7 +20,9 @@ int main()
     struct sockaddr_in server, client;
 
     char recvArg[256];
+    FILE *fp;
     char *tableName = (char *)malloc(TABLE_NAME_LENGTH + 1);
+    char filePath[256];
     char *procCategory;
 
     WSAStartup(MAKEWORD(2, 0), &w);
@@ -52,42 +54,58 @@ int main()
 
         getArgument(recvArg, &tableName, &procCategory, argList, &argListCount);
 
-        switch (*procCategory)
+        // テーブルの存在チェック
+        sprintf(filePath, "data/%s/%s.csv", tableName, tableName);
+        fp = fopen(filePath, "r");
+        if (fp == NULL)
         {
-        case 'S': // SELECT:検索
-                  // conditionList:取得条件の列と値のペア
-                  // conditionListCount:取得条件の数
-            splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount, argListCount);
+            result = "指定したテーブルは存在しません。\n";
+            count = strlen(result);
+        }
+        else
+        {
 
-            result = tableSelect(tableName, conditionList, conditionListCount, &count);
-            break;
-        case 'I': // INSERT:挿入
-            // argList:テーブルに挿入する各列の値
-            result = tableInsert(tableName, argList, &count);
-            break;
-        case 'U': // UPDATE:更新
-                  // updateList:更新される列と値のペア
-                  // conditionList:更新条件の列と値のペア
-                  // updateListCount:更新対象列の数
-                  // conditionListCount:更新条件の数
-            splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount, argListCount);
-            result = tableUpdate(tableName, updateList, conditionList, updateListCount, conditionListCount, &count);
+            switch (*procCategory)
+            {
 
-            break;
-        case 'D': // DELETE:削除
-                  // conditionList:更新条件の列と値のペア
-                  // conditionListCount:更新条件の数
-            splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount, argListCount);
-            result = tableDelete(tableName, conditionList, conditionListCount, &count);
+            case 'S': // SELECT:検索
+                      // conditionList:取得条件の列と値のペア
+                      // conditionListCount:取得条件の数
+                splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount, argListCount);
 
-            break;
-        default:
-            printf("%s\n", "失敗！");
+                result = tableSelect(tableName, conditionList, conditionListCount, &count);
+                break;
+            case 'I': // INSERT:挿入
+                // argList:テーブルに挿入する各列の値
+                result = tableInsert(tableName, argList, &count);
+                break;
+            case 'U': // UPDATE:更新
+                      // updateList:更新される列と値のペア
+                      // conditionList:更新条件の列と値のペア
+                      // updateListCount:更新対象列の数
+                      // conditionListCount:更新条件の数
+                splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount, argListCount);
+                result = tableUpdate(tableName, updateList, conditionList, updateListCount, conditionListCount, &count);
 
-            break;
+                break;
+            case 'D': // DELETE:削除
+                      // conditionList:更新条件の列と値のペア
+                      // conditionListCount:更新条件の数
+                splitArgument(argList, updateList, conditionList, &updateListCount, &conditionListCount, argListCount);
+                result = tableDelete(tableName, conditionList, conditionListCount, &count);
+
+                break;
+            default:
+                // printf("%s\n", "指定した処理区分は無効です。S,I,U,Dのいずれかを指定してください。");
+                result = "指定した処理区分は無効です。S,I,U,Dのいずれかを指定してください。\n";
+                count = strlen(result);
+                break;
+            }
         }
 
         printf("%s", result);
+
+        fclose(fp);
 
         // クライアント側へ送信
         send(sock2, result, count + 1, 0);
